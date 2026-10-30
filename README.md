@@ -47,7 +47,7 @@ Certificates in the Windows certificate store or on smart cards/tokens are curre
 1. Select the **certificate** and, if needed, the **private key**, and enter the password if required.
 2. Use **Certificate Info** or **Key Info** to check the details: subject, issuer, validity, thumbprint, key type, code signing permission, and whether key and certificate match.
 3. Add scripts via **Add files…** or **Add folder…** (`.ps1`, `.psm1`, `.psd1`, `.ps1xml`).
-4. Choose the options next to the sign button: **Insert signing header into script** (enabled by default at every start) and **Create backup before changes (.bak)** (also enabled by default at every start).
+4. Choose the options next to the sign button: **Insert signing header into script** and **Create backup before changes (.bak)**. Both are enabled at startup by default; the startup defaults can be changed in the settings.
 5. Click **Sign scripts**. The result is shown in the log.
 6. Use **Verify signature** (or double-click a file) to check the signature status. If nothing is selected, all files are verified.
 
@@ -60,6 +60,7 @@ Under **File → Settings…** you can configure:
 - Timestamp server (default: `http://timestamp.digicert.com`)
 - Hash algorithm (SHA256, SHA384, SHA512)
 - PowerShell version (`powershell.exe` or `pwsh.exe`)
+- Defaults at startup: insert signing header, create backup (`.bak`)
 
 Settings are stored in `C:\Users\<username>\.ps-signer\settings.json`. When closing the application, the current paths and the script list are saved automatically. **Passwords are never stored.**
 

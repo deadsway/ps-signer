@@ -62,7 +62,7 @@ except ImportError:  # pragma: no cover
 # Constants
 # --------------------------------------------------------------------------- #
 APP_NAME = "PS-Signer"
-APP_VERSION = "1.3"
+APP_VERSION = "1.4"
 APP_AUTHOR = "Steffen Jahn"
 CONFIG_DIR = Path.home() / ".ps-signer"          # C:\Users\<username>\.ps-signer
 CONFIG_FILE = CONFIG_DIR / "settings.json"
@@ -105,6 +105,8 @@ class Settings:
     timestamp_server: str = "http://timestamp.digicert.com"
     hash_algorithm: str = "SHA256"
     powershell_exe: str = "powershell.exe"
+    default_insert_header: bool = True
+    default_create_backup: bool = True
 
     @classmethod
     def load(cls) -> "Settings":
@@ -558,6 +560,8 @@ class SettingsDialog(tk.Toplevel):
         str_keys = ["author_name", "author_email", "cert_path", "key_path",
                     "script_dir", "timestamp_server", "hash_algorithm", "powershell_exe"]
         self.vars = {k: tk.StringVar(value=getattr(s, k)) for k in str_keys}
+        for key in ("default_insert_header", "default_create_backup"):
+            self.vars[key] = tk.BooleanVar(value=getattr(s, key))
 
         frm = ttk.Frame(self, padding=12)
         frm.pack(fill="both", expand=True)
@@ -601,6 +605,16 @@ class SettingsDialog(tk.Toplevel):
         combo("Timestamp server:", "timestamp_server", TS_SERVERS)
         combo("Hash algorithm:", "hash_algorithm", ["SHA256", "SHA384", "SHA512"], True)
         combo("PowerShell:", "powershell_exe", ["powershell.exe", "pwsh.exe"])
+
+        def check(label, key):
+            nonlocal row
+            ttk.Checkbutton(frm, text=label, variable=self.vars[key]).grid(
+                row=row, column=1, sticky="w", pady=2)
+            row += 1
+
+        section("Defaults at startup")
+        check("Insert signing header into script", "default_insert_header")
+        check("Create backup before changes (.bak)", "default_create_backup")
 
         bar = ttk.Frame(frm)
         bar.grid(row=row, column=0, columnspan=3, sticky="e", pady=(14, 0))
@@ -661,8 +675,8 @@ class App(tk.Tk):
         self.cert_var = tk.StringVar()
         self.key_var = tk.StringVar()
         self.pw_var = tk.StringVar()
-        self.header_var = tk.BooleanVar(value=True)     # always on at startup
-        self.backup_var = tk.BooleanVar(value=True)     # always on at startup
+        self.header_var = tk.BooleanVar()     # set from settings in apply_settings()
+        self.backup_var = tk.BooleanVar()
         self.status_var = tk.StringVar(value="Ready")
         self._busy_widgets = []
 
@@ -772,6 +786,8 @@ class App(tk.Tk):
         s = self.settings
         self.cert_var.set(s.cert_path)
         self.key_var.set(s.key_path)
+        self.header_var.set(s.default_insert_header)
+        self.backup_var.set(s.default_create_backup)
 
     def sync_to_settings(self):
         s = self.settings
